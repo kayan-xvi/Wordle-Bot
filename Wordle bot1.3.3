@@ -1,0 +1,192 @@
+def getwords():
+    
+    # Getting list of 5 letter words from website 
+
+    from urllib.request import urlopen
+    url = "https://gist.githubusercontent.com/cfreshman/cdcdf777450c5b5301e439061d29694c/raw/de1df631b45492e0974f7affe266ec36fed736eb/wordle-allowed-guesses.txt"
+    page = urlopen(url)
+    html_bytes = page.read()
+    html = html_bytes.decode("utf-8")
+    return html
+
+_green =[]
+_yellow = []
+_black = []
+_answer = {1:'?', 2:'?', 3:'?', 4:'?', 5:'?'}
+
+# Function to count the number of occurances of each letter in the alphabet
+
+def counting(word):
+    letterlist = {}
+    alphabet = 'abcdefghijklmonpqrstuvwxyz'
+    for letter in alphabet: 
+        letterlist[letter] = word.count(letter)
+    return letterlist
+
+_words = getwords()
+possible = _words.split('\n')
+_possible = _words.split('\n')
+letterlist = counting(_words)
+
+
+print('Letterlist is:')
+print(letterlist)
+
+# Ordering the letters from least to most occurances 
+
+def order1(letterlist):
+
+    order = []
+
+    for i in range(26):
+        least = 10000
+        saved = ''
+        for letter,number in letterlist.items():
+            if number < least: 
+                least = number
+                saved = letter
+        letterlist[saved] = 10000
+        order.append(saved)
+    print('\n The letters in order of least to most occurances:')
+    return(order)
+
+print('\n\nTEST\n\n')
+print(order1(letterlist))
+order = []
+order = order1(letterlist)
+print(order)
+
+# Function removing any words from possible if it contains a repeat of at least 1 letter 
+
+print('\n The number of possible words total:')
+print(len(possible))
+
+def repeat_let(word): 
+    return any(word.count(x) > 1 for x in word)
+    
+for i in range(len(possible)-1, -1, -1): 
+    if repeat_let(possible[i]):
+        possible.remove(possible[i])
+print(possible)
+print('\n The number of possible words once ones containg letter repeats have been removed:') 
+print(len(possible))
+
+# Finding list of possible words by removing words with the least common letters in order 
+# Do this until only 1 word or there are only 5 letters left 
+
+def single(possible, order):
+
+    print(order)
+    var = 0
+
+    while len(possible) > 20 and var <= 22: 
+        for length in range(len(possible)-1, -1, -1): 
+            if order[var] in possible[length] and len(possible) > 1: 
+                possible.remove(possible[length])
+        var += 1
+
+    print('\n The number of possible words once the least common have been removed:') 
+    print(len(possible))
+    return(possible)
+
+single(possible,order)
+
+print('\n This is the word which you should use:\n{}'.format(possible[0]))
+
+attempt = [possible[0]]
+
+
+# This has now printed the first attempt
+# It wil now take input as a result of this attempt in the function
+
+def feedback():
+
+    result = input('What was the result? (g = green, y = yellow, b = black) \n').lower().replace(' ','')
+
+# This adds each letter to _answer, _green, _yellow, _black
+
+    if result == 'ggggg':
+        print('Complete')
+        exit()
+
+    for i in range(5): 
+        if result[i] == 'g':
+            _answer[i+1] = attempt[0][i]
+            _green.append(attempt[0][i])
+        if result[i] == 'y':
+            _yellow.append(attempt[0][i])
+        if result[i] == 'b':
+            _black.append(attempt[0][i])
+
+    print('\n This prints what we currently know about the answer:')
+    print(_answer)
+
+    print('\n These are the greens:')
+    print(_green)
+
+    print('\n These are the yellows:')
+    print(_yellow)
+
+    print('\n These are the blacks:')
+    print(_black)
+
+# Function takes any words containing any _blacks out of _possible
+
+def remove(_black, _possible): 
+    for a in range(len(_black)):
+        for i in range(len(_possible)-1,-1,-1):
+            if _black[a] in _possible[i]:
+                _possible.remove(_possible[i])
+    _black.clear()
+
+# The aim of this function is finding new letters which are in the word rather than trying to find thew actual word
+def explore(_possible1, _green1, _yellow1, _black1): 
+    
+    print(_possible1)
+    print(len(_possible1))
+    letterlist1 = counting(str(_possible1))
+    print(letterlist1)
+# This is the function for the whole process of a new round
+
+def new(_possible, _green, _yellow, _black):
+    
+    print('\n This is the number of all possible words')
+    print(len(_possible))
+    
+    remove(_black, _possible)
+    
+    print('\n This is the number of all possible words after the blacks have been removed')
+    print(len(_possible))
+    print(_possible)
+    
+    
+    # This is what happens if less than 2 letters are g/y
+    if len(_green) + len(_yellow) < 2: 
+        explore(_possible, _green, _yellow, _black)
+    # This is what happens if 2 or more letters are g/y
+    '''
+    else:
+        complete(_possible, _green, _yellow, _black)
+    '''
+# This is where the actual process is happening   
+
+feedback()
+new(_possible, _green, _yellow, _black)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
